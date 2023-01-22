@@ -18,8 +18,8 @@ namespace SAJInverterManager {
   // Serial configuration
   const int  RTU_SERIAL = 1;
   const long RTU_BAUD   = 9600;
-  const int  RTU_RXD    = 26;
-  const int  RTU_TXD    = 27;
+  const int  RTU_RXD    = 02;
+  const int  RTU_TXD    = 00;
 
   // RTU configuration
   const int RTU_TIMEOUT  = 2000; // Msg timeout ms
@@ -29,6 +29,10 @@ namespace SAJInverterManager {
   // Logging
   const bool SERIAL_DBG_FLAG = false;
 
+  // Led GPIO
+  const int LED_GPIO = 21;
+  const int LED_DUTY = 80;
+
 }
 
 // Setup method
@@ -37,6 +41,9 @@ void sajInverterSetup();
 // Service management
 void sajInverterStart();
 void sajInverterStop();
+
+// Led handler
+void sajInverterBlinkLed();
 
 // RTU data handler
 void sajInverterOnDataHandler (ModbusMessage response);

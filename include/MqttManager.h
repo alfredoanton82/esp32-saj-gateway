@@ -17,6 +17,10 @@ const int  MQTT_PORT   = 1883;
 const char MQTT_USER[] = "";
 const char MQTT_PSWD[] = "";
 
+// Led GPIO
+const int MQTT_LED = 19;
+const int MQTT_DUTY = 150;
+
 // MQTT Log
 const char MQTT_LOG[] = "esp32pwmeter/log";
 
@@ -38,3 +42,6 @@ void mqttAddTopic(const char* topic);
 void mqttLoop();
 void mqttAddOnConnectCallback(onMqttEventFunction callback);
 void mqttAddOnDisconnectCallback(onMqttEventFunction callback);
+void mqttBlinkLed();
+void mqttOnLed();
+void mqttOffLed();

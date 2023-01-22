@@ -24,6 +24,8 @@ void wifiSetup() {
 
   Serial.printf("Setting up Wifi: %s\n", WIFI_SSID);
 
+  pinMode(WIFI_LED, OUTPUT);
+
   WiFi.mode(WIFI_STA);
   if (WIFI_STATIC_IP) {
     WiFi.config(WIFI_IP_ADDR, WIFI_GATEWAY, WIFI_SUBNET, WIFI_P_DNS, WIFI_S_DNS);
@@ -37,6 +39,20 @@ void wifiSetup() {
 
 }
 
+void wifiBlinkLed() {
+  analogWrite( WIFI_LED, WIFI_DUTY );
+  delay(20);
+  analogWrite(WIFI_LED, LOW);
+}
+
+void wifiOnLed() {
+  analogWrite(WIFI_LED, WIFI_DUTY);
+}
+
+void wifiOffLed() {
+  analogWrite(WIFI_LED, LOW);
+}
+
 void wifiStart() {
   wifiTicker.enable(0);
 }
@@ -48,6 +64,8 @@ void wifiConnect() {
 
   WiFi.setSleep(false);
   WiFi.persistent(false);
+
+  wifiBlinkLed();
 
   WiFi.begin(WIFI_SSID, WIFI_PSWD);
   WiFi.waitForConnectResult(WIFI_TIMEOUT);
@@ -75,6 +93,7 @@ void wifiOnEvent(WiFiEvent_t event)
     Serial.printf("WiFi connected : %s\n", WiFi.localIP().toString());
 
     wifiTicker.disable(0);
+    wifiOnLed();
 
     break;
   case SYSTEM_EVENT_STA_LOST_IP:
@@ -85,8 +104,9 @@ void wifiOnEvent(WiFiEvent_t event)
       callback();
     }
 
+    wifiOffLed();    
     delay(WIFI_RECONNECT);
-    
+
     wifiTicker.enable(0);
 
     break;

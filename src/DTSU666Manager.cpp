@@ -21,6 +21,8 @@ void dtsu666Setup() {
 
   Serial.printf("Setting up meter RTU: RX = %d / TX = %d\n", RTU_RXD, RTU_TXD);
 
+  pinMode(LED_GPIO, OUTPUT);
+
   // Configure and Start serial
   rtuSerial.begin(RTU_BAUD, SERIAL_8N1, RTU_RXD, RTU_TXD);
 
@@ -35,6 +37,12 @@ void dtsu666Start() {
 
 void dtsu666Stop() {
     rtuServer.stop(); 
+}
+
+void dtsu666BlinkLed() {
+  analogWrite(LED_GPIO, LED_DUTY);
+  delay(20);
+  analogWrite(LED_GPIO, LOW);
 }
 
 void dtsu666RegisterWorker(DTSU666Worker worker) {
@@ -58,6 +66,8 @@ void dtsu666OnDataHandler (ModbusMessage msg) {
 
     // Parse response
     DTSU666Data data = DTSU666Data(msg);
+
+    dtsu666BlinkLed();
 
     if (SERIAL_DBG_FLAG) {
       Serial.println(data.json().c_str());

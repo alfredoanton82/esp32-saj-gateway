@@ -27,6 +27,10 @@ namespace DTSU666Manager {
   // Debug flag
   const bool SERIAL_DBG_FLAG = false;
 
+  // Led GPIO
+  const int LED_GPIO = 21;
+  const int LED_DUTY = 80;
+
 }
 
 // Setup method
@@ -35,6 +39,9 @@ void dtsu666Setup();
 // Service management
 void dtsu666Start();
 void dtsu666Stop();
+
+// Led handler
+void dtsu666BlinkLed();
 
 // RTU data handler
 void dtsu666OnDataHandler (ModbusMessage response);

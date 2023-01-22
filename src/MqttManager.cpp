@@ -28,6 +28,8 @@ AsyncMqttClient* mqttSetup(const char* clientId) {
   
   Serial.printf("Setting up MQTT: %s:%d\n", MQTT_HOST, MQTT_PORT);
 
+  pinMode(MQTT_LED, OUTPUT);
+
   mqttClient.setServer(MQTT_HOST, MQTT_PORT);
   mqttClient.setCredentials(MQTT_USER, MQTT_PSWD);
   mqttClient.setClientId(clientId);
@@ -52,13 +54,29 @@ void mqttConnect() {
 
     Serial.printf("Connecting MQTT: %s:%d\n", MQTT_HOST, MQTT_PORT);
     mqttClient.connect();
+    mqttBlinkLed();
 
+}
+
+void mqttBlinkLed() {
+  analogWrite(MQTT_LED, MQTT_DUTY);
+  delay(20);
+  analogWrite(MQTT_LED, LOW);
+}
+
+void mqttOnLed() {
+  analogWrite(MQTT_LED, MQTT_DUTY);
+}
+
+void mqttOffLed() {
+  analogWrite(MQTT_LED, LOW);
 }
 
 void mqttOnConnect(bool sessionPresent) {
 
   // Disconnect tickers
   mqttTicker.disable(0);
+  mqttOnLed();
 
   // Once connected, publish an announcement...
   char outMsg[80];
@@ -91,6 +109,7 @@ void mqttOnDisconnect(AsyncMqttClientDisconnectReason reason) {
     callback();
   }
   mqttTicker.enable(0);
+  mqttOffLed();
 
 }
 

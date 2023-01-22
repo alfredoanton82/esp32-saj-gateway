@@ -21,6 +21,8 @@ void sajInverterSetup() {
 
   Serial.printf("Setting up inverter RTU: RX = %d / TX = %d\n", RTU_RXD, RTU_TXD);
 
+  pinMode(LED_GPIO, OUTPUT);
+
   // Configure and Start serial
   rtuSerial.begin(RTU_BAUD, SERIAL_8N1, RTU_RXD, RTU_TXD);
 
@@ -35,6 +37,12 @@ void sajInverterStart() {
 
 void sajInverterStop() {
     rtuServer.stop(); 
+}
+
+void sajInverterBlinkLed() {
+  analogWrite(LED_GPIO, LED_DUTY);
+  delay(20);
+  analogWrite(LED_GPIO, LOW);
 }
 
 void sajInverterRegisterWorker(SAJInverterWorker worker) {
@@ -57,6 +65,12 @@ void sajInverterOnDataHandler (ModbusMessage msg) {
 
     // Parse response
     SAJInverterData data = SAJInverterData(msg);
+
+    sajInverterBlinkLed();
+
+    if (SERIAL_DBG_FLAG) {
+      Serial.println(data.json().c_str());
+    }
 
     // Call workers
     if (data.isValid()) {

@@ -26,11 +26,17 @@ const IPAddress WIFI_S_DNS(10, 4, 4, 4);
 const long WIFI_RECONNECT = 5000L;
 const long WIFI_TIMEOUT = 5000L;
 
+const int WIFI_LED = 18;
+const int WIFI_DUTY = 80;
+
 // Callback definition
 typedef std::function<void()> onWifiEventFunction;
 
 // Functions
 void wifiSetup();
+void wifiBlinkLed();
+void wifiOnLed();
+void wifiOffLed();
 void wifiStart();
 void wifiConnect();
 void wifiOnEvent(WiFiEvent_t event);
