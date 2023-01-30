@@ -19,9 +19,9 @@ using namespace SAJInverterManager;
 
 void sajInverterSetup() {
 
-  Serial.printf("Setting up inverter RTU: RX = %d / TX = %d\n", RTU_RXD, RTU_TXD);
+  Serial.printf("Setting up inverter RTU: Serial = %d / RX = %d / TX = %d\n", RTU_SERIAL, RTU_RXD, RTU_TXD);
 
-  pinMode(LED_GPIO, OUTPUT);
+  sajInverterSetupLed();
 
   // Configure and Start serial
   rtuSerial.begin(RTU_BAUD, SERIAL_8N1, RTU_RXD, RTU_TXD);
@@ -39,10 +39,15 @@ void sajInverterStop() {
     rtuServer.stop(); 
 }
 
+void sajInverterSetupLed() {
+  ledcSetup(LED_PWM_C, LED_PWM_F, LED_PWM_R);
+  ledcAttachPin(LED_GPIO, LED_PWM_C);
+}
+
 void sajInverterBlinkLed() {
-  analogWrite(LED_GPIO, LED_DUTY);
-  delay(20);
-  analogWrite(LED_GPIO, LOW);
+  ledcWrite(LED_PWM_C, LED_PWM_D);
+  delay(50);
+  ledcWrite(LED_PWM_C, LOW);
 }
 
 void sajInverterRegisterWorker(SAJInverterWorker worker) {
@@ -78,7 +83,7 @@ void sajInverterOnDataHandler (ModbusMessage msg) {
         worker(data);
       }
     } else {
-      Serial.printf("ERROR: invalid data / %s", data.json().c_str());
+      Serial.printf("ERROR: invalid data / %s\n", data.json().c_str());
     }
   }
 

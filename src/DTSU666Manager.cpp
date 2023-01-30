@@ -19,9 +19,9 @@ using namespace DTSU666Manager;
 
 void dtsu666Setup() {
 
-  Serial.printf("Setting up meter RTU: RX = %d / TX = %d\n", RTU_RXD, RTU_TXD);
+  Serial.printf("Setting up meter RTU: Serial = %d / RX = %d / TX = %d\n", RTU_SERIAL, RTU_RXD, RTU_TXD);
 
-  pinMode(LED_GPIO, OUTPUT);
+  dtsu666SetupLed();
 
   // Configure and Start serial
   rtuSerial.begin(RTU_BAUD, SERIAL_8N1, RTU_RXD, RTU_TXD);
@@ -39,10 +39,15 @@ void dtsu666Stop() {
     rtuServer.stop(); 
 }
 
+void dtsu666SetupLed() {
+  ledcSetup(LED_PWM_C, LED_PWM_F, LED_PWM_R);
+  ledcAttachPin(LED_GPIO, LED_PWM_C);
+}
+
 void dtsu666BlinkLed() {
-  analogWrite(LED_GPIO, LED_DUTY);
-  delay(20);
-  analogWrite(LED_GPIO, LOW);
+  ledcWrite(LED_PWM_C, LED_PWM_D);
+  delay(50);
+  ledcWrite(LED_PWM_C, LOW);
 }
 
 void dtsu666RegisterWorker(DTSU666Worker worker) {

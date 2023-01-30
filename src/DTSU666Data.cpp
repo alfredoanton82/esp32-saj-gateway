@@ -5,6 +5,7 @@
 #include <DTSU666Data.h>
 
 DTSU666Data::DTSU666Data() {
+  n = 0;
 }
 
 // Copy constructor
@@ -15,6 +16,8 @@ DTSU666Data::DTSU666Data(const DTSU666Data &m) {
 DTSU666Data::DTSU666Data(ModbusMessage msg) {
   
   if (msg.data() != NULL) {
+
+    n = 1;
 
     U[0]  = readFloat(msg,  0, 3);
     U[1]  = readFloat(msg,  1, 3);
@@ -72,17 +75,17 @@ bool DTSU666Data::isValid(){
 
   bool out = true;
   for (int i = 0; i < 3; i++) {
-    out &= ( Ulimits[0] < U[i] && U[i] < Ulimits[1] ) && 
-           ( Vlimits[0] < V[i] && V[i] < Vlimits[1] ) &&
-           ( Ilimits[0] < I[i] && I[i] < Ilimits[1] );
+    out &= ( Ulimits[0]  < U[i]/n  && U[i]/n  < Ulimits[1] ) && 
+           ( Vlimits[0]  < V[i]/n  && V[i]/n  < Vlimits[1] ) &&
+           ( Ilimits[0]  < I[i]/n  && I[i]/n  < Ilimits[1] );
   }
   for (int i = 0; i < 4; i++) {
-    out &= ( Plimits[0] < P[i]  && P[i]  < Plimits[1] ) && 
-           ( Qlimits[0] < Q[i]  && Q[i]  < Qlimits[1] ) &&
-           ( Slimits[0] < S[i]  && S[i]  < Slimits[1] ) &&
-           ( PfLimits[0] < Pf[i] && Pf[i] < PfLimits[1] );
+    out &= ( Plimits[0]  < P[i]/n  && P[i]/n  < Plimits[1] ) && 
+           ( Qlimits[0]  < Q[i]/n  && Q[i]/n  < Qlimits[1] ) &&
+           ( Slimits[0]  < S[i]/n  && S[i]/n  < Slimits[1] ) &&
+           ( PfLimits[0] < Pf[i]/n && Pf[i]/n < PfLimits[1] );
   }
-  out &= ( fLimits[0] < f && f < fLimits[1] );
+  out &= ( fLimits[0] < f/n && f/n < fLimits[1] );
 
   return out;
   
@@ -92,6 +95,7 @@ bool DTSU666Data::isValid(){
 DTSU666Data& DTSU666Data::operator=(const DTSU666Data& m) {
   // Do anything only if not self-assigning
   if (this != &m) {
+    n = m.n;
     for (int i = 0; i < 3; i++) {
       U[i] = m.U[i];
       V[i] = m.V[i];
@@ -112,6 +116,7 @@ DTSU666Data& DTSU666Data::operator=(const DTSU666Data& m) {
 // Adition operator
 DTSU666Data& DTSU666Data::operator+(const DTSU666Data& m) {
 
+  n += m.n;
   for (int i = 0; i < 3; i++) {
     U[i] += m.U[i];
     V[i] += m.V[i];
@@ -128,57 +133,41 @@ DTSU666Data& DTSU666Data::operator+(const DTSU666Data& m) {
   return *this;
 }
 
-DTSU666Data DTSU666Data::scale(float scale) {
-
-  // Scale each value
-  for (int i = 0; i < 3; i++) {
-    U[i] *= scale;
-    V[i] *= scale;
-    I[i] *= scale;
-  }
-  for (int i = 0; i < 4; i++) {
-    P[i] *= scale;
-    Q[i] *= scale;
-    S[i] *= scale;
-    Pf[i] *= scale;
-  }
-  
-  f *= scale;
-
-  return *this;  
-}
-
 String DTSU666Data::json() {
 
   String outJsonMsg;
 
   StaticJsonDocument<1024> root;
-  root["V_L12"] = U[0];
-  root["V_L23"] = U[1];
-  root["V_L31"] = U[2];
-  root["V_L1"]  = V[0];
-  root["V_L2"]  = V[1];
-  root["V_L3"]  = V[2];
-  root["I_L1"]  = I[0];
-  root["I_L2"]  = I[1];
-  root["I_L3"]  = I[2];
-  root["P_T"]   = P[0];
-  root["P_L1"]  = P[1];
-  root["P_L2"]  = P[2];
-  root["P_L3"]  = P[3];
-  root["Q_T"]   = Q[0];
-  root["Q_L1"]  = Q[1];
-  root["Q_L2"]  = Q[2];
-  root["Q_L3"]  = Q[3];
-  root["S_T"]   = S[0];
-  root["S_L1"]  = S[1];
-  root["S_L2"]  = S[2];
-  root["S_L3"]  = S[3];
-  root["Pf_T"]  = Pf[0];
-  root["Pf_L1"] = Pf[1];
-  root["Pf_L2"] = Pf[2];
-  root["Pf_L3"] = Pf[3];
-  root["Freq"]  = f;
+
+  root["samples"] = n;
+
+  // Writing averages
+  root["V_L12"] = U[0]/n;
+  root["V_L23"] = U[1]/n;
+  root["V_L31"] = U[2]/n;
+  root["V_L1"]  = V[0]/n;
+  root["V_L2"]  = V[1]/n;
+  root["V_L3"]  = V[2]/n;
+  root["I_L1"]  = I[0]/n;
+  root["I_L2"]  = I[1]/n;
+  root["I_L3"]  = I[2]/n;
+  root["P_T"]   = P[0]/n;
+  root["P_L1"]  = P[1]/n;
+  root["P_L2"]  = P[2]/n;
+  root["P_L3"]  = P[3]/n;
+  root["Q_T"]   = Q[0]/n;
+  root["Q_L1"]  = Q[1]/n;
+  root["Q_L2"]  = Q[2]/n;
+  root["Q_L3"]  = Q[3]/n;
+  root["S_T"]   = S[0]/n;
+  root["S_L1"]  = S[1]/n;
+  root["S_L2"]  = S[2]/n;
+  root["S_L3"]  = S[3]/n;
+  root["Pf_T"]  = Pf[0]/n;
+  root["Pf_L1"] = Pf[1]/n;
+  root["Pf_L2"] = Pf[2]/n;
+  root["Pf_L3"] = Pf[3]/n;
+  root["Freq"]  = f/n;
 
   // Convert to JSON
   serializeJson(root, outJsonMsg);
@@ -188,10 +177,14 @@ String DTSU666Data::json() {
 }
 
 // Getters
+int DTSU666Data::getN(){
+  return n;
+}
+
 array<float,3> DTSU666Data::getU() {
   array<float,3> out;
   for (int i = 0; i < 3; i++) {
-    out[i] = U[i];
+    out[i] = U[i]/n;
   }
   return out;
 }
@@ -199,7 +192,7 @@ array<float,3> DTSU666Data::getU() {
 array<float,3> DTSU666Data::getV() {
   array<float,3> out;
   for (int i = 0; i < 3; i++) {
-    out[i] = V[i];
+    out[i] = V[i]/n;
   }
   return out;
 }
@@ -207,7 +200,7 @@ array<float,3> DTSU666Data::getV() {
 array<float,3> DTSU666Data::getI() {
   array<float,3> out;
   for (int i = 0; i < 3; i++) {
-    out[i] = I[i];
+    out[i] = I[i]/n;
   }
   return out;
 }
@@ -215,7 +208,7 @@ array<float,3> DTSU666Data::getI() {
 array<float,4> DTSU666Data::getP() {
   array<float,4> out;
   for (int i = 0; i < 4; i++) {
-    out[i] = P[i];
+    out[i] = P[i]/n;
   }
   return out;
 }
@@ -223,7 +216,7 @@ array<float,4> DTSU666Data::getP() {
 array<float,4> DTSU666Data::getQ() {
   array<float,4> out;
   for (int i = 0; i < 4; i++) {
-    out[i] = Q[i];
+    out[i] = Q[i]/n;
   }
   return out;
 }
@@ -231,7 +224,7 @@ array<float,4> DTSU666Data::getQ() {
 array<float,4> DTSU666Data::getS() {
   array<float,4> out;
   for (int i = 0; i < 4; i++) {
-    out[i] = S[i];
+    out[i] = S[i]/n;
   }
   return out;
 }
@@ -239,12 +232,12 @@ array<float,4> DTSU666Data::getS() {
 array<float,4> DTSU666Data::getPf() {
   array<float,4> out;
   for (int i = 0; i < 4; i++) {
-    out[i] = Pf[i];
+    out[i] = Pf[i]/n;
   }
   return out;
 }
 
-float DTSU666Data::getf() {
-  return f;
+float DTSU666Data::getF() {
+  return f/n;
 }
 

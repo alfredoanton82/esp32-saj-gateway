@@ -24,7 +24,7 @@ void wifiSetup() {
 
   Serial.printf("Setting up Wifi: %s\n", WIFI_SSID);
 
-  pinMode(WIFI_LED, OUTPUT);
+  wifiSetupLed();
 
   WiFi.mode(WIFI_STA);
   if (WIFI_STATIC_IP) {
@@ -39,18 +39,23 @@ void wifiSetup() {
 
 }
 
+void wifiSetupLed() {
+  ledcSetup(WIFI_PWM_C, WIFI_PWM_F, WIFI_PWM_R);
+  ledcAttachPin(WIFI_GPIO, WIFI_PWM_C);
+}
+
 void wifiBlinkLed() {
-  analogWrite( WIFI_LED, WIFI_DUTY );
+  ledcWrite(WIFI_PWM_C, WIFI_PWM_D);
   delay(20);
-  analogWrite(WIFI_LED, LOW);
+  ledcWrite(WIFI_PWM_C, LOW);
 }
 
 void wifiOnLed() {
-  analogWrite(WIFI_LED, WIFI_DUTY);
+  ledcWrite(WIFI_PWM_C, WIFI_PWM_D);
 }
 
 void wifiOffLed() {
-  analogWrite(WIFI_LED, LOW);
+  ledcWrite(WIFI_PWM_C, LOW);
 }
 
 void wifiStart() {
@@ -82,7 +87,7 @@ void wifiOnEvent(WiFiEvent_t event)
   case SYSTEM_EVENT_STA_GOT_IP:
 
     Serial.printf("WiFi connected : %s\n", WiFi.localIP().toString());
-
+    
     for(auto callback : onConnectCallbacks) {
       callback();
     }

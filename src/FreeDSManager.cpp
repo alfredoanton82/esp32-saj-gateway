@@ -25,10 +25,34 @@ void freeDSPwMeterOnDataHandler(DTSU666Data data) {
 
     // Prepare JSON
     StaticJsonDocument<512> root;
-    root["ENERGY"]["Power"] = data.getP()[0]; // [W]
 
     array<float,3> acV = data.getV();
-    root["ENERGY"]["Voltage"] = (acV[0]+acV[1]+acV[2]) / 3.0;
+    root["ENERGY"]["Voltage"]       = (acV[0]+acV[1]+acV[2]) / 3.0; // [V]
+
+    array<float,3> acI = data.getI();
+    root["ENERGY"]["Current"]       = (acI[0]+acI[1]+acI[2]); // [A]
+
+    root["ENERGY"]["Frequency"]     = data.getF(); // [Hz]
+
+    root["ENERGY"]["Power"]         = data.getP()[0]; // [W]
+    root["ENERGY"]["ApparentPower"] = data.getS()[0]; // [VA]
+    root["ENERGY"]["ReactivePower"] = data.getQ()[0]; // [VAR]
+    root["ENERGY"]["Factor"]        = data.getPf()[0];
+
+    // Dummy values
+    root["ENERGY"]["TotalStartTime"] = "2000-01-01T00:00:00";
+    root["ENERGY"]["Today"]          = 0.0;
+    root["ENERGY"]["Yesterday"]      = 0.0;
+    root["ENERGY"]["Period"]         = 0.0;
+    root["ENERGY"]["ExportActive"]   = 0.0;
+    root["ENERGY"]["ImportActive"]   = 0.0;
+    root["ENERGY"]["ExportReactive"] = 0.0;
+    root["ENERGY"]["ImportReactive"] = 0.0;
+    root["ENERGY"]["PhaseAngle"]     = 0.0;
+
+//    root["ENERGY"]["TotalTariff"]    = [0.0,0.0];
+//    root["ENERGY"]["ExportTariff"]    = [0.0,0.0];
+//    root["ENERGY"]["ImportTariff"]    = [0.0,0.0];
 
     // Convert to JSON
     String json;

@@ -16,6 +16,9 @@ using namespace std;
 class DTSU666Data {
 
 	protected:
+
+		int 	n;  // Number of samples
+
 		float U[3];  // Voltage between phases [U_12, U_23, U_31] [V]
 		float V[3];  // Voltage between phases and neutral [U_1, U_2, U_3] [V]
 		float I[3];  // Current per phase [I_1, I_2, I_3] [A]
@@ -62,13 +65,11 @@ class DTSU666Data {
 		// Check integrity
 		bool isValid();
 
-		// Multiply by scalar
-		DTSU666Data scale(float scale);
-
 		// Json
 		String json();
 
 		// Getters
+		int getN();
 		array<float,3> getU();
 		array<float,3> getV();
 		array<float,3> getI();
@@ -76,6 +77,6 @@ class DTSU666Data {
 		array<float,4> getQ();
 		array<float,4> getS();
 		array<float,4> getPf();
-		float  				 getf();
+		float getF();
 
 };

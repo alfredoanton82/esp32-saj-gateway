@@ -28,7 +28,7 @@ AsyncMqttClient* mqttSetup(const char* clientId) {
   
   Serial.printf("Setting up MQTT: %s:%d\n", MQTT_HOST, MQTT_PORT);
 
-  pinMode(MQTT_LED, OUTPUT);
+  mqttSetupLed();
 
   mqttClient.setServer(MQTT_HOST, MQTT_PORT);
   mqttClient.setCredentials(MQTT_USER, MQTT_PSWD);
@@ -50,6 +50,11 @@ void mqttStart() {
   mqttTicker.enable(0);
 }
 
+void mqttStop() {
+  mqttTicker.disableAll();
+  mqttClient.disconnect();
+}
+
 void mqttConnect() {
 
     Serial.printf("Connecting MQTT: %s:%d\n", MQTT_HOST, MQTT_PORT);
@@ -58,18 +63,23 @@ void mqttConnect() {
 
 }
 
+void mqttSetupLed() {
+  ledcSetup(MQTT_PWM_C, MQTT_PWM_F, MQTT_PWM_R);
+  ledcAttachPin(MQTT_GPIO, MQTT_PWM_C);
+}
+
 void mqttBlinkLed() {
-  analogWrite(MQTT_LED, MQTT_DUTY);
+  ledcWrite(MQTT_PWM_C, MQTT_PWM_D);
   delay(20);
-  analogWrite(MQTT_LED, LOW);
+  ledcWrite(MQTT_PWM_C, LOW);
 }
 
 void mqttOnLed() {
-  analogWrite(MQTT_LED, MQTT_DUTY);
+  ledcWrite(MQTT_PWM_C, MQTT_PWM_D);
 }
 
 void mqttOffLed() {
-  analogWrite(MQTT_LED, LOW);
+  ledcWrite(MQTT_PWM_C, LOW);
 }
 
 void mqttOnConnect(bool sessionPresent) {
@@ -127,7 +137,6 @@ void mqttOnMessage(char *topic, char *payload, AsyncMqttClientMessageProperties 
 void mqttAddTopic(const char* topic) {
   topics.push_back(topic);
 }
-
 
 void mqttAddOnConnectCallback(onMqttEventFunction callback) {
   onConnectCallbacks.push_back(callback);

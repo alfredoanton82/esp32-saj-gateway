@@ -30,8 +30,11 @@ namespace SAJInverterManager {
   const bool SERIAL_DBG_FLAG = false;
 
   // Led GPIO
-  const int LED_GPIO = 21;
-  const int LED_DUTY = 80;
+  const int LED_GPIO  = 21;
+  const int LED_PWM_C = 4;    // Channel
+  const int LED_PWM_F = 1000; // 1 KHz
+  const int LED_PWM_R = 8;    // 8 bits
+  const int LED_PWM_D = 25;   // Duty
 
 }
 
@@ -43,6 +46,7 @@ void sajInverterStart();
 void sajInverterStop();
 
 // Led handler
+void sajInverterSetupLed();
 void sajInverterBlinkLed();
 
 // RTU data handler

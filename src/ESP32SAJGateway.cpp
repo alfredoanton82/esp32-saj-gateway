@@ -8,13 +8,9 @@
 unsigned long dtsuLastMeasTime = 0L;
 unsigned long sajInvLastMeasTime = 0L;
 
-// Moving average
-DTSU666Data dtsuAveraged;
-SAJInverterData sajInvAveraged;
-
-// Number of samples (DTSU666 sends 1 measurement per second)
-int dtsuNumSamples = 1;
-int sajInvNumSamples = 1;
+// Moving average (initialize to empty)
+DTSU666Data dtsuAveraged = DTSU666Data();
+SAJInverterData sajInvAveraged = SAJInverterData();
 
 // MqttClient
 AsyncMqttClient *mqtt;
@@ -34,7 +30,8 @@ void setup()
 
   // Add Wifi connect callback
   wifiAddOnConnectCallback(mqttStart);
-
+  wifiAddOnDisconnectCallback(mqttStop);
+  
   // Connect wifi
   wifiStart();
 
@@ -53,7 +50,7 @@ void setup()
   
   // Add callbacks (only start and stop on wifi and mqtt connection)
   mqttAddOnConnectCallback(sajInverterStart);
-  mqttAddOnDisconnectCallback(sajInverterStop);
+  wifiAddOnDisconnectCallback(sajInverterStop);
   mqttAddOnDisconnectCallback(sajInverterStop);
 
   // Configure freeds
@@ -74,23 +71,19 @@ void loop() {
 void onDTSU666DataHandler(DTSU666Data data) {
 
     // First initialisation
-    if (dtsuAveraged.isValid()) {
+    if (dtsuAveraged.getN() > 0) {
 
       // Update moving average
-      dtsuNumSamples++;
       dtsuAveraged = dtsuAveraged + data;
 
       // Publish every MEAS_INTERVAL (historical)
       if (millis() - dtsuLastMeasTime >= MEAS_INTERVAL) {
 
         dtsuLastMeasTime = millis();
-
-        dtsuAveraged = dtsuAveraged.scale(1.0/dtsuNumSamples);
         
         mqtt->publish(MQTT_PWMETER_AVE, 0, false, dtsuAveraged.json().c_str());
 
         // Reset current average
-        dtsuNumSamples = 1;
         dtsuAveraged = data;
 
       }
@@ -98,7 +91,6 @@ void onDTSU666DataHandler(DTSU666Data data) {
     } else {
 
       // Initialising
-      dtsuNumSamples = 1;
       dtsuAveraged = data;
 
     }
@@ -108,23 +100,19 @@ void onDTSU666DataHandler(DTSU666Data data) {
 void onSAJInverterDataHandler(SAJInverterData data) {
 
     // First initialisation
-    if (sajInvAveraged.isValid()) {
+    if (sajInvAveraged.getN() > 0 ) {
 
       // Update moving average
-      sajInvNumSamples++;
       sajInvAveraged = sajInvAveraged + data;
-    
+
       // Publish every MEAS_INTERVAL (historical)
       if (millis() - sajInvLastMeasTime >= MEAS_INTERVAL) {
 
         sajInvLastMeasTime = millis();
 
-        sajInvAveraged = sajInvAveraged.scale(1.0/sajInvNumSamples);
-
         mqtt->publish(MQTT_INVERTER_AVE, 0, false, sajInvAveraged.json().c_str());
 
         // Reset current average
-        sajInvNumSamples = 1;
         sajInvAveraged = data;
 
       }
@@ -132,7 +120,6 @@ void onSAJInverterDataHandler(SAJInverterData data) {
     } else {
 
       // Initialising
-      sajInvNumSamples = 1;
       sajInvAveraged = data;
 
     }

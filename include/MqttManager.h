@@ -18,8 +18,11 @@ const char MQTT_USER[] = "";
 const char MQTT_PSWD[] = "";
 
 // Led GPIO
-const int MQTT_LED = 19;
-const int MQTT_DUTY = 150;
+const int MQTT_GPIO  = 19;
+const int MQTT_PWM_C = 2;    // Channel
+const int MQTT_PWM_F = 1000; // 1 KHz
+const int MQTT_PWM_R = 8;    // 8 bits
+const int MQTT_PWM_D = 50;  // Duty
 
 // MQTT Log
 const char MQTT_LOG[] = "esp32pwmeter/log";
@@ -34,14 +37,20 @@ typedef std::function<void()> onMqttEventFunction;
 AsyncMqttClient *mqttSetup(const char* clientId);
 
 void mqttStart();
+void mqttStop();
+
 void mqttConnect();
 void mqttOnConnect(bool sessionPresent);
 void mqttOnDisconnect(AsyncMqttClientDisconnectReason reason);
 void mqttOnMessage(char *topic, char *payload, AsyncMqttClientMessageProperties properties, size_t len, size_t index, size_t total);
-void mqttAddTopic(const char* topic);
+
 void mqttLoop();
+
+void mqttAddTopic(const char* topic);
 void mqttAddOnConnectCallback(onMqttEventFunction callback);
 void mqttAddOnDisconnectCallback(onMqttEventFunction callback);
+
+void mqttSetupLed();
 void mqttBlinkLed();
 void mqttOnLed();
 void mqttOffLed();
