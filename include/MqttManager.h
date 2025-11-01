@@ -5,6 +5,7 @@
 #include <Arduino.h>
 #include <AsyncMqttClient.h>
 #include <TickerScheduler.h>
+#include <esp32-hal-ledc.h>
 
 #include <vector>
 #include <string>

@@ -3,8 +3,6 @@
 //               MIT license - see license.md for details
 // =================================================================================================
 #include <DTSU666Manager.h>
-#include <Arduino.h>
-#include <esp32-hal-ledc.h>
 
 namespace DTSU666Manager {
 

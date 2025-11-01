@@ -5,6 +5,7 @@
 #include <Arduino.h>
 #include <ModbusServerRTU.h>
 #include <DTSU666Data.h>
+#include <esp32-hal-ledc.h>
 
 #include <ESP32SAJGatewayLogging.h>
 
