@@ -5,6 +5,7 @@
 #include <Arduino.h>
 #include <WiFi.h>
 #include <TickerScheduler.h>
+#include <esp32-hal-ledc.h>  // LEDC functions
 
 #include <vector>
 

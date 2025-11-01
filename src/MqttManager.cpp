@@ -1,9 +1,10 @@
-
 // =================================================================================================
 // esp32-saj-gateway: Copyright 2023 by Alfredo M. Anton
 //               MIT license - see license.md for details
 // =================================================================================================
-#include<MqttManager.h>
+#include <MqttManager.h>
+#include <Arduino.h>
+#include <esp32-hal-ledc.h>
 
 namespace MqttManager {
 
@@ -63,49 +64,47 @@ void mqttConnect() {
 
 }
 
+// -------------------- LED PWM functions using modern HAL --------------------
+
 void mqttSetupLed() {
-  ledcSetup(MQTT_PWM_C, MQTT_PWM_F, MQTT_PWM_R);
-  ledcAttachPin(MQTT_GPIO, MQTT_PWM_C);
+  // Attach pin to PWM with given frequency & resolution
+  // No need to manage channels manually
+  ledcAttach(MQTT_GPIO, MQTT_PWM_F, MQTT_PWM_R);
 }
 
 void mqttBlinkLed() {
-  ledcWrite(MQTT_PWM_C, MQTT_PWM_D);
+  ledcWrite(MQTT_GPIO, MQTT_PWM_D);
   delay(20);
-  ledcWrite(MQTT_PWM_C, LOW);
+  ledcWrite(MQTT_GPIO, 0); // LOW replaced with 0 for duty cycle
 }
 
 void mqttOnLed() {
-  ledcWrite(MQTT_PWM_C, MQTT_PWM_D);
+  ledcWrite(MQTT_GPIO, MQTT_PWM_D);
 }
 
 void mqttOffLed() {
-  ledcWrite(MQTT_PWM_C, LOW);
+  ledcWrite(MQTT_GPIO, 0);
 }
+
+// -------------------- MQTT callbacks --------------------
 
 void mqttOnConnect(bool sessionPresent) {
 
-  // Disconnect tickers
   mqttTicker.disable(0);
   mqttOnLed();
 
-  // Once connected, publish an announcement...
   char outMsg[80];
   sprintf(outMsg, "Connected MQTT: %s:%d", MQTT_HOST, MQTT_PORT);
   mqttClient.publish(MQTT_LOG, 0, false, outMsg);
   Serial.println(outMsg);
 
-  // ... and resubscribe
   for (auto t : topics) {
-
     mqttClient.subscribe(t.c_str(), 0);
-
     sprintf(outMsg, "Subscribed to MQTT topic: %s", t.c_str());
     mqttClient.publish(MQTT_LOG, 0, false, outMsg);
     Serial.println(outMsg);
-
   }
 
-  // Call callbacks
   for(auto callback : onConnectCallbacks) {
     callback();
   }

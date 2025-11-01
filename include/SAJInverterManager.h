@@ -5,6 +5,7 @@
 #include <Arduino.h>
 #include <HardwareSerial.h>
 #include <ModbusServerRTU.h>
+#include <esp32-hal-ledc.h> // Required for LED PWM functions
 
 #include <SAJInverterData.h>
 

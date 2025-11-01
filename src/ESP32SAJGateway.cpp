@@ -39,19 +39,9 @@ void setup()
   dtsu666Setup();
   dtsu666RegisterWorker(onDTSU666DataHandler);
   
-  // Add callbacks (only start and stop on wifi and mqtt connection)
-  mqttAddOnConnectCallback(dtsu666Start);
-  wifiAddOnDisconnectCallback(dtsu666Stop);
-  mqttAddOnDisconnectCallback(dtsu666Stop);
-
   // // Start dtsu666
   sajInverterSetup();
   sajInverterRegisterWorker(onSAJInverterDataHandler);
-  
-  // Add callbacks (only start and stop on wifi and mqtt connection)
-  mqttAddOnConnectCallback(sajInverterStart);
-  wifiAddOnDisconnectCallback(sajInverterStop);
-  mqttAddOnDisconnectCallback(sajInverterStop);
 
   // Configure freeds
   freeDSSetup(mqtt);

@@ -3,6 +3,8 @@
 //               MIT license - see license.md for details
 // =================================================================================================
 #include <DTSU666Manager.h>
+#include <Arduino.h>
+#include <esp32-hal-ledc.h>
 
 namespace DTSU666Manager {
 
@@ -31,24 +33,20 @@ void dtsu666Setup() {
 
 }
 
-void dtsu666Start() {
-    rtuServer.start(-1, RTU_INTERVAL); 
-}
-
-void dtsu666Stop() {
-    rtuServer.stop(); 
-}
+// -------------------- LED PWM functions using modern HAL --------------------
 
 void dtsu666SetupLed() {
-  ledcSetup(LED_PWM_C, LED_PWM_F, LED_PWM_R);
-  ledcAttachPin(LED_GPIO, LED_PWM_C);
+  // Modern HAL: attach pin to PWM
+  ledcAttach(LED_GPIO, LED_PWM_F, LED_PWM_R);
 }
 
 void dtsu666BlinkLed() {
-  ledcWrite(LED_PWM_C, LED_PWM_D);
+  ledcWrite(LED_GPIO, LED_PWM_D);
   delay(50);
-  ledcWrite(LED_PWM_C, LOW);
+  ledcWrite(LED_GPIO, 0); // LOW replaced with 0
 }
+
+// -------------------- Worker registration / data handling --------------------
 
 void dtsu666RegisterWorker(DTSU666Worker worker) {
   workerList.push_back(worker);
@@ -57,13 +55,11 @@ void dtsu666RegisterWorker(DTSU666Worker worker) {
 void dtsu666OnDataHandler (ModbusMessage msg) {
 
   if (SERIAL_DBG_FLAG) {
-
     Serial.println(msg.size());
     for (auto& byte : msg) {
       Serial.printf("%02X,", byte);
     }
     Serial.println();
-
   }
 
   // Process results
