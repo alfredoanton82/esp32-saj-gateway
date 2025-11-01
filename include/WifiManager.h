@@ -43,7 +43,8 @@ void wifiSetup();
 void wifiStart();
 void wifiConnect();
 
-void wifiOnEvent(WiFiEvent_t event);
+// Header (WifiManager.h)
+void wifiOnEvent(arduino_event_id_t event, arduino_event_info_t info);
 void wifiAddOnConnectCallback(onWifiEventFunction callback);
 void wifiAddOnDisconnectCallback(onWifiEventFunction callback);
 
