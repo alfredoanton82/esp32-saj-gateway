@@ -35,9 +35,8 @@ AsyncMqttClient* mqttSetup(const char* clientId) {
 
   mqttClient.onConnect(mqttOnConnect);
   mqttClient.onDisconnect(mqttOnDisconnect);
-  mqttClient.onMessage(mqttOnMessage);
-  mqttClient.setKeepAlive(30);
-  mqttClient.setMaxTopicLength(256);
+  mqttClient.setServer(MQTT_SERVER, MQTT_PORT);
+  mqttClient.setCredentials(MQTT_USER, MQTT_PSWD);
 
   mqttTicker.add(0, MQTT_RECONNECT, [&](void *) { mqttConnect(); }, nullptr, false); 
   mqttTicker.disableAll();
