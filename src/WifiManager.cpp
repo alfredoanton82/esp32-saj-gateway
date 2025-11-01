@@ -17,6 +17,9 @@ namespace WifiManager {
   std::vector<onWifiEventFunction> onConnectCallbacks;
   std::vector<onWifiEventFunction> onDisconnectCallbacks;
 
+  // LED manager instance for WiFi
+  LedManager wifiLed(WIFI_GPIO, WIFI_PWM_F, WIFI_PWM_R, WIFI_PWM_D);
+
 }
 
 using namespace WifiManager;
@@ -26,9 +29,6 @@ using namespace WifiManager;
 // =====================================================
 void wifiSetup() {
   Serial.printf("Setting up WiFi: %s\n", WIFI_SSID);
-
-  // Setup LED for WiFi status
-  wifiSetupLed();
 
   // Configure WiFi as Station
   WiFi.mode(WIFI_STA);
@@ -51,28 +51,18 @@ void wifiSetup() {
 }
 
 // =====================================================
-// LED Setup for WiFi
-// =====================================================
-void wifiSetupLed() {
-  // Attach the LED pin to a PWM channel using new ledcAttach
-  ledcAttach(WIFI_GPIO, WIFI_PWM_F, WIFI_PWM_R);
-}
-
-// =====================================================
 // LED Controls
 // =====================================================
 void wifiBlinkLed() {
-  ledcWrite(WIFI_GPIO, WIFI_PWM_D); // Half or full brightness
-  delay(20);
-  ledcWrite(WIFI_GPIO, 0);          // Turn off
+  wifiLed.startBlink(20); // Blink LED while connecting
 }
 
 void wifiOnLed() {
-  ledcWrite(WIFI_GPIO, WIFI_PWM_D); // Full brightness
+  wifiLed.setConnected(true);
 }
 
 void wifiOffLed() {
-  ledcWrite(WIFI_GPIO, 0);          // Off
+  wifiLed.setConnected(false);
 }
 
 // =====================================================
@@ -91,7 +81,7 @@ void wifiConnect() {
   WiFi.setSleep(false);
   WiFi.persistent(false);
 
-  wifiBlinkLed(); // Blink LED during connection attempt
+  wifiLed.startBlink(20); // Blink LED during connection attempt
 
   WiFi.begin(WIFI_SSID, WIFI_PSWD);
   WiFi.waitForConnectResult(WIFI_TIMEOUT);
@@ -116,7 +106,7 @@ void wifiOnEvent(arduino_event_id_t event, arduino_event_info_t info) {
 
       // Stop reconnect ticker and turn LED on
       wifiTicker.disable(0);
-      wifiOnLed();
+      wifiLed.setConnected(true);
       break;
     }
 
@@ -129,9 +119,10 @@ void wifiOnEvent(arduino_event_id_t event, arduino_event_info_t info) {
         callback();
       }
 
-      wifiOffLed();            // Turn off LED
-      delay(WIFI_RECONNECT);   // Wait before reconnect
-      wifiTicker.enable(0);    // Start reconnect ticker
+      wifiLed.setConnected(false); // LED off
+      wifiLed.startBlink(20);      // Start blinking again while reconnecting
+      delay(WIFI_RECONNECT);       
+      wifiTicker.enable(0);
       break;
     }
 
@@ -157,4 +148,5 @@ void wifiAddOnDisconnectCallback(onWifiEventFunction callback) {
 // =====================================================
 void wifiLoop() {
   wifiTicker.update();
+  wifiLed.update(); // Update LED blinking
 }

@@ -1,15 +1,17 @@
 // =================================================================================================
+// WifiManager.h
 // esp32-saj-gateway: Copyright 2023 by Alfredo M. Anton
-//               MIT license - see license.md for details
+// MIT license - see license.md for details
 // =================================================================================================
+#pragma once
+
 #include <Arduino.h>
 #include <WiFi.h>
 #include <TickerScheduler.h>
-#include <esp32-hal-ledc.h>  // LEDC functions
 
 #include <vector>
 
-#include<ESP32SAJGatewayLogging.h>
+#include "LedManager.h"
 
 // WIFI Configuration
 const char WIFI_SSID[] = "";
@@ -23,12 +25,12 @@ const IPAddress WIFI_SUBNET(255, 255, 255, 0);
 const IPAddress WIFI_P_DNS(10, 4, 4, 4);
 const IPAddress WIFI_S_DNS(10, 4, 4, 4);
 
-// Wifi reconnect timer 
+// Wifi reconnect timer
 const long WIFI_RECONNECT = 5000L;
-const long WIFI_TIMEOUT = 5000L;
+const long WIFI_TIMEOUT   = 5000L;
 
-// Led GPIO
-const int WIFI_GPIO = 18;
+// LED configuration
+const int WIFI_GPIO  = 18;
 const int WIFI_PWM_C = 0;    // Channel
 const int WIFI_PWM_F = 1000; // 1 KHz
 const int WIFI_PWM_R = 8;    // 8 bits
@@ -49,8 +51,3 @@ void wifiAddOnConnectCallback(onWifiEventFunction callback);
 void wifiAddOnDisconnectCallback(onWifiEventFunction callback);
 
 void wifiLoop();
-
-void wifiSetupLed();
-void wifiBlinkLed();
-void wifiOnLed();
-void wifiOffLed();

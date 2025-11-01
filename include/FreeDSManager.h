@@ -8,8 +8,6 @@
 #include <DTSU666Data.h>
 #include <SAJInverterData.h>
 
-#include <ESP32SAJGatewayLogging.h>
-
 #include <iostream>
 #include <array>
 #include <string>

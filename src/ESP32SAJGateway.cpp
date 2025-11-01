@@ -54,6 +54,8 @@ void loop() {
 
   wifiLoop();
   mqttLoop();
+  dtsu666Loop();
+  sajInverterLoop();
   delay(1000); // Only used for Tickers update, other services are asynchronous.
 
 }

@@ -2,12 +2,12 @@
 // esp32-saj-gateway: Copyright 2023 by Alfredo M. Anton
 //               MIT license - see license.md for details
 // =================================================================================================
+#pragma once
+
 #include <Arduino.h>
 #include <ModbusServerRTU.h>
 #include <DTSU666Data.h>
-#include <esp32-hal-ledc.h>
-
-#include <ESP32SAJGatewayLogging.h>
+#include <LedManager.h>
 
 // Workers
 typedef std::function<void(DTSU666Data data)> DTSU666Worker;
@@ -28,7 +28,7 @@ namespace DTSU666Manager {
   // Debug flag
   const bool SERIAL_DBG_FLAG = false;
 
-  // Led GPIO
+  // LED GPIO
   const int LED_GPIO  = 21;
   const int LED_PWM_C = 4;    // Channel
   const int LED_PWM_F = 1000; // 1 KHz
@@ -44,12 +44,10 @@ void dtsu666Setup();
 void dtsu666Start();
 void dtsu666Stop();
 
-// Led handler
-void dtsu666SetupLed();
-void dtsu666BlinkLed();
-
 // RTU data handler
 void dtsu666OnDataHandler (ModbusMessage response);
 
 // Register worker
 void dtsu666RegisterWorker(DTSU666Worker worker);
+
+void dtsu666Loop();

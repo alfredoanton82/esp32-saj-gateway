@@ -2,15 +2,15 @@
 // esp32-saj-gateway: Copyright 2023 by Alfredo M. Anton
 //               MIT license - see license.md for details
 // =================================================================================================
+
 #include <Arduino.h>
 #include <AsyncMqttClient.h>
 #include <TickerScheduler.h>
-#include <esp32-hal-ledc.h>
 
 #include <vector>
 #include <string>
 
-#include <ESP32SAJGatewayLogging.h>
+#include <LedManager.h>
 
 // MQTT Configuration
 const char MQTT_HOST[] = "";
@@ -18,7 +18,7 @@ const int  MQTT_PORT   = 1883;
 const char MQTT_USER[] = "";
 const char MQTT_PSWD[] = "";
 
-// Led GPIO
+// MQTT LED GPIO
 const int MQTT_GPIO  = 19;
 const int MQTT_PWM_C = 2;    // Channel
 const int MQTT_PWM_F = 1000; // 1 KHz
@@ -51,7 +51,3 @@ void mqttAddTopic(const char* topic);
 void mqttAddOnConnectCallback(onMqttEventFunction callback);
 void mqttAddOnDisconnectCallback(onMqttEventFunction callback);
 
-void mqttSetupLed();
-void mqttBlinkLed();
-void mqttOnLed();
-void mqttOffLed();

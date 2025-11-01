@@ -2,6 +2,7 @@
 // esp32-saj-gateway: Copyright 2023 by Alfredo M. Anton
 //               MIT license - see license.md for details
 // =================================================================================================
+
 #include <MqttManager.h>
 
 namespace MqttManager {
@@ -19,6 +20,8 @@ namespace MqttManager {
   std::vector<onMqttEventFunction> onConnectCallbacks;
   std::vector<onMqttEventFunction> onDisconnectCallbacks;
 
+  // Instantiate LED manager for MQTT
+  LedManager mqttLed(MQTT_GPIO, MQTT_PWM_F, MQTT_PWM_R, MQTT_PWM_D);
 }
 
 using namespace MqttManager;
@@ -27,7 +30,6 @@ AsyncMqttClient* mqttSetup(const char* clientId) {
   
   Serial.printf("Setting up MQTT: %s:%d\n", MQTT_HOST, MQTT_PORT);
 
-  mqttSetupLed();
 
   mqttClient.setServer(MQTT_HOST, MQTT_PORT);
   mqttClient.setCredentials(MQTT_USER, MQTT_PSWD);
@@ -35,8 +37,6 @@ AsyncMqttClient* mqttSetup(const char* clientId) {
 
   mqttClient.onConnect(mqttOnConnect);
   mqttClient.onDisconnect(mqttOnDisconnect);
-  mqttClient.setServer(MQTT_SERVER, MQTT_PORT);
-  mqttClient.setCredentials(MQTT_USER, MQTT_PSWD);
 
   mqttTicker.add(0, MQTT_RECONNECT, [&](void *) { mqttConnect(); }, nullptr, false); 
   mqttTicker.disableAll();
@@ -44,6 +44,9 @@ AsyncMqttClient* mqttSetup(const char* clientId) {
   return &mqttClient;
 }
 
+// =====================================================
+// Start MQTT connection
+// =====================================================
 void mqttStart() {
   mqttTicker.enable(0);
 }
@@ -54,41 +57,19 @@ void mqttStop() {
 }
 
 void mqttConnect() {
+  
+  Serial.printf("Connecting MQTT: %s:%d\n", MQTT_HOST, MQTT_PORT);
+  
+  // Start blinking LED during connection attempt
+  mqttLed.startBlink(20);
 
-    Serial.printf("Connecting MQTT: %s:%d\n", MQTT_HOST, MQTT_PORT);
-    mqttClient.connect();
-    mqttBlinkLed();
-
+  mqttClient.connect();
 }
 
-// -------------------- LED PWM functions using modern HAL --------------------
-
-void mqttSetupLed() {
-  // Attach pin to PWM with given frequency & resolution
-  // No need to manage channels manually
-  ledcAttach(MQTT_GPIO, MQTT_PWM_F, MQTT_PWM_R);
-}
-
-void mqttBlinkLed() {
-  ledcWrite(MQTT_GPIO, MQTT_PWM_D);
-  delay(20);
-  ledcWrite(MQTT_GPIO, 0); // LOW replaced with 0 for duty cycle
-}
-
-void mqttOnLed() {
-  ledcWrite(MQTT_GPIO, MQTT_PWM_D);
-}
-
-void mqttOffLed() {
-  ledcWrite(MQTT_GPIO, 0);
-}
-
-// -------------------- MQTT callbacks --------------------
-
+// =====================================================
+// MQTT Event handlers
+// =====================================================
 void mqttOnConnect(bool sessionPresent) {
-
-  mqttTicker.disable(0);
-  mqttOnLed();
 
   char outMsg[80];
   sprintf(outMsg, "Connected MQTT: %s:%d", MQTT_HOST, MQTT_PORT);
@@ -106,19 +87,27 @@ void mqttOnConnect(bool sessionPresent) {
     callback();
   }
 
+  mqttLed.setConnected(true);  // LED off while disconnected
+  mqttTicker.disable(0); // Stop reconnect ticker
+
 }
 
 void mqttOnDisconnect(AsyncMqttClientDisconnectReason reason) {
-
   Serial.printf("MQTT disconnected: %d\n", reason);
-  for(auto callback : onDisconnectCallbacks) {
+
+
+  for (auto callback : onDisconnectCallbacks) {
     callback();
   }
-  mqttTicker.enable(0);
-  mqttOffLed();
+
+  mqttLed.setConnected(false);  // LED off while disconnected
+  mqttTicker.enable(0); // Start reconnect ticker
 
 }
 
+// =====================================================
+// Register callbacks
+// =====================================================
 void mqttOnMessage(char *topic, char *payload, AsyncMqttClientMessageProperties properties, size_t len, size_t index, size_t total)
 {
 
@@ -142,6 +131,10 @@ void mqttAddOnDisconnectCallback(onMqttEventFunction callback) {
   onDisconnectCallbacks.push_back(callback);
 }
 
-void mqttLoop(){
+// =====================================================
+// Loop updates (call in main loop)
+// =====================================================
+void mqttLoop() {
   mqttTicker.update();
+  mqttLed.update(); // Update LED blinking
 }
